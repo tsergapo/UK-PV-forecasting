@@ -1,0 +1,14 @@
+type: tcn
+params:
+  seq_len: 168
+  num_channels: [32, 64, 64]
+  kernel_size: 3
+  dropout: 0.2
+  epochs: 100
+  batch_size: 32
+  lr: 0.001                # notebook used 1e-5 for 30 epochs, which is likely under-trained
+  weight_decay: 1.0e-5
+  patience: 6
+  val_fraction: 0.15
+  refit_full: true
+  grad_clip: 1.0

@@ -1,0 +1,6 @@
+type: xgb
+params:
+  n_estimators: 100        # = xgboost defaults used in the notebook, made explicit
+  max_depth: 6
+  learning_rate: 0.3
+  use_sun_hours: true      # notebook's dominant sunrise/sunset flags (fit on train only)

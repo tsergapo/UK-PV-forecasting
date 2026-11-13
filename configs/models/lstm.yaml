@@ -1,0 +1,15 @@
+type: lstm
+params:
+  seq_len: 168
+  hidden_dim: 32           # best row of the notebook's LSTM leaderboard
+  num_layers: 1
+  bidirectional: true
+  dropout: 0.2
+  epochs: 100              # cap; early stopping decides
+  batch_size: 64
+  lr: 0.002
+  weight_decay: 1.0e-5
+  patience: 6
+  val_fraction: 0.15
+  refit_full: true         # after early stopping, retrain on all train data for best_epoch epochs
+  grad_clip: 1.0

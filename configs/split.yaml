@@ -1,0 +1,7 @@
+split:
+  test_years: 2        # last N years are the held-out test period
+  n_val_folds: 2       # expanding-window validation folds just before the test period
+  fold_years: 1        # length of each validation / test window
+backtest:
+  horizon: 24          # hours per forecast block (issued at the block start, 00:00 UTC)
+  context_hours: 168   # every model is scored only on blocks with this much clean history

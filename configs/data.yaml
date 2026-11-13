@@ -1,0 +1,34 @@
+ss_id: 6801
+target: generation_kwh
+
+paths:
+  pv_parquet_dir: data/raw/uk_pv/30_minutely
+  metadata_csv: data/raw/uk_pv/metadata.csv
+  era5_csv: ["data/raw/ERA5/*.csv", "data/raw/ERA5_extra/*.csv"]   # merged on lat/lon/valid_time
+  era5_grib: ["data/raw/cloud_*/data.grib"]                        # hcc/lcc/mcc, any number of files
+  out_dir: data/processed
+
+cleaning:
+  max_interp_halfhours: 1        # interpolate isolated gaps of <= this many half-hours
+
+weather:
+  accumulated_vars: [ssrd, fdir] # ERA5 accumulations over the hour ENDING at valid_time
+  alignment: accumulation_aware  # or "legacy_mean" to reproduce the notebook's smoothing
+
+# Known-in-advance covariates fed to every model (target and daylight are NOT inputs)
+exog_columns:
+  - ssrd
+  - fdir
+  - tcc
+  - hcc
+  - mcc
+  - lcc
+  - t2m_c
+  - u10
+  - v10
+  - ws10
+  - hour_sin
+  - hour_cos
+  - doy_sin
+  - doy_cos
+  - solar_elevation

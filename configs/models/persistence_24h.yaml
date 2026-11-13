@@ -1,0 +1,2 @@
+type: seasonal_naive
+params: {period_hours: 24}
