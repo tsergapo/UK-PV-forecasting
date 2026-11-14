@@ -8,8 +8,6 @@ os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")  # before torch/CUDA
 import argparse
 from pathlib import Path
 
-import pandas as pd
-
 from uk_pv.config import load_yaml, split_configs_from_yaml
 from uk_pv.data.build import load_dataset
 from uk_pv.experiment import run_experiment
