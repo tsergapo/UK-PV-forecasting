@@ -1,6 +1,6 @@
 # data & artifacts (large / regenerable)
-data/
-artifacts/
+/data/
+/artifacts/
 results/predictions/
 *.pt
 *.ckpt
