@@ -25,3 +25,10 @@ def test_handles_gaps_by_time_not_position():
     w = _w().drop(_w().index[1])
     out = align_to_hour_buckets(w, accumulated=["ssrd"])
     assert np.isnan(out["t2m"].iloc[0])  # t+1h is missing -> NaN, not the next row's value
+
+
+def test_negative_accumulations_are_clipped():
+    w = _w()
+    w.loc[w.index[0], "ssrd"] = -5.0
+    out = align_to_hour_buckets(w, accumulated=["ssrd"])
+    assert (out["ssrd"].dropna() >= 0).all()

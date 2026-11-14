@@ -4,8 +4,10 @@ target: generation_kwh
 paths:
   pv_parquet_dir: data/raw/uk_pv/30_minutely
   metadata_csv: data/raw/uk_pv/metadata.csv
-  era5_csv: ["data/raw/ERA5/*.csv", "data/raw/ERA5_extra/*.csv"]   # merged on lat/lon/valid_time
-  era5_grib: ["data/raw/cloud_*/data.grib"]                        # hcc/lcc/mcc, any number of files
+  # File names do not matter. CSVs with the same variables are treated as time chunks, CSVs with
+  # different variables are joined on lat/lon/time. GRIB files (hcc/mcc/lcc) are time chunks.
+  era5_csv: ["data/raw/ERA5/*.csv"]
+  era5_grib: ["data/raw/ERA5/*.grib"]
   out_dir: data/processed
 
 cleaning:
