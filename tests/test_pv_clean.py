@@ -38,6 +38,13 @@ def test_isolated_daytime_gap_interpolated_long_gap_kept():
     assert long.loc["2021-01-12 11:00":"2021-01-12 12:00"].isna().any()
 
 
+def test_stamps_that_collide_after_rounding_do_not_crash():
+    raw = _raw({"2021-01-12 12:30": 1000})
+    extra = pd.DataFrame({"datetime_GMT": [pd.Timestamp("2021-01-12 12:30:10")], "generation_Wh": [5.0]})
+    h = clean_pv_to_hourly(pd.concat([raw, extra], ignore_index=True), LAT, LON)
+    assert h.index.is_unique and abs(h.loc["2021-01-12 12:00"] - 1.0) < 1e-9  # first value kept
+
+
 def test_night_gap_filled_with_zero_and_index_continuous():
     h = clean_pv_to_hourly(_raw(drop=["2021-01-12 02:00", "2021-01-12 02:30"]), LAT, LON)
     assert h.loc["2021-01-12 01:00":"2021-01-12 02:00"].notna().all()
