@@ -41,18 +41,23 @@ def train_network(
 
     for ep in range(1, epochs + 1):
         net.train()
-        tot, n = 0.0, 0
+        tot, n, last_gn = 0.0, 0, float('nan')
         for xb, yb in iterate_batches(A, T, train_pos, seq_len, batch_size, True, gen, device):
             opt.zero_grad()
             loss = crit(net(xb), yb)
             if not torch.isfinite(loss):
+                p_ok = all(bool(torch.isfinite(q).all()) for q in net.parameters())
                 raise FloatingPointError(
-                    f"[{label}] non-finite training loss at epoch {ep}: the inputs contain NaN/inf "
-                    "or the learning rate is too high"
+                    f"[{label}] non-finite training loss at epoch {ep}. "
+                    f"batch inputs finite: {bool(torch.isfinite(xb).all())} "
+                    f"(max |x| = {float(xb.abs().max()):.1f}); targets finite: "
+                    f"{bool(torch.isfinite(yb).all())}; network weights finite: {p_ok}; "
+                    f"last gradient norm: {last_gn:.3g}; train loss so far: "
+                    f"{[round(v, 4) for v in res.train_loss]}"
                 )
             loss.backward()
             if grad_clip:
-                torch.nn.utils.clip_grad_norm_(net.parameters(), grad_clip)
+                last_gn = float(torch.nn.utils.clip_grad_norm_(net.parameters(), grad_clip))
             opt.step()
             tot += loss.item() * len(yb)
             n += len(yb)

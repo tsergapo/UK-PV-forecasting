@@ -54,7 +54,7 @@ def valid_positions(A: np.ndarray, T: np.ndarray, seq_len: int) -> np.ndarray:
     n = len(A)
     if n < seq_len:
         return np.empty(0, dtype=np.int64)
-    bad_cs = np.concatenate(([0], np.cumsum(np.isnan(A).any(axis=1))))
+    bad_cs = np.concatenate(([0], np.cumsum((~np.isfinite(A)).any(axis=1))))
     t = np.arange(seq_len - 1, n)
     ok = (bad_cs[t + 1] - bad_cs[t + 1 - seq_len] == 0) & np.isfinite(T[t])
     return t[ok]
