@@ -37,13 +37,14 @@ class Chomp1d(nn.Module):
 
 
 class TemporalBlock(nn.Module):
-    def __init__(self, c_in, c_out, kernel_size, dilation, dropout):
+    def __init__(self, c_in, c_out, kernel_size, dilation, dropout, use_weight_norm=True):
         super().__init__()
         pad = (kernel_size - 1) * dilation
+        wn = weight_norm if use_weight_norm else (lambda m: m)
         self.net = nn.Sequential(
-            weight_norm(nn.Conv1d(c_in, c_out, kernel_size, padding=pad, dilation=dilation)),
+            wn(nn.Conv1d(c_in, c_out, kernel_size, padding=pad, dilation=dilation)),
             Chomp1d(pad), nn.ReLU(), nn.Dropout(dropout),
-            weight_norm(nn.Conv1d(c_out, c_out, kernel_size, padding=pad, dilation=dilation)),
+            wn(nn.Conv1d(c_out, c_out, kernel_size, padding=pad, dilation=dilation)),
             Chomp1d(pad), nn.ReLU(), nn.Dropout(dropout),
         )
         self.down = nn.Conv1d(c_in, c_out, 1) if c_in != c_out else nn.Identity()
@@ -56,11 +57,12 @@ class TemporalBlock(nn.Module):
 class TCNNet(nn.Module):
     """Causal dilated convolutions; [B, L, F] -> scalar [B]."""
 
-    def __init__(self, input_dim, num_channels=(32, 64, 64), kernel_size=3, dropout=0.2):
+    def __init__(self, input_dim, num_channels=(32, 64, 64), kernel_size=3, dropout=0.2,
+                 use_weight_norm=True):
         super().__init__()
         layers, c_prev = [], input_dim
         for i, c in enumerate(num_channels):
-            layers.append(TemporalBlock(c_prev, c, kernel_size, 2**i, dropout))
+            layers.append(TemporalBlock(c_prev, c, kernel_size, 2**i, dropout, use_weight_norm))
             c_prev = c
         self.tcn = nn.Sequential(*layers)
         self.fc = nn.Linear(c_prev, 1)

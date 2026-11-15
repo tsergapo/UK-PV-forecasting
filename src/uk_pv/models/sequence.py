@@ -118,7 +118,7 @@ def make_lstm(target, exog_cols, seed=0, **params):
 
 
 def make_tcn(target, exog_cols, seed=0, **params):
-    net_kw, train_kw = _split(params, ("num_channels", "kernel_size", "dropout"))
+    net_kw, train_kw = _split(params, ("num_channels", "kernel_size", "dropout", "use_weight_norm"))
     return SequenceForecaster(
         target, exog_cols, lambda d: TCNNet(d, **net_kw), "tcn", seed=seed, **train_kw
     )

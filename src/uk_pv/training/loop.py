@@ -12,6 +12,7 @@ class TrainResult:
     best_epoch: int
     train_loss: list[float] = field(default_factory=list)
     val_loss: list[float] = field(default_factory=list)
+    skipped_steps: int = 0
 
 
 def iterate_batches(A, T, pos, seq_len, batch_size, shuffle, generator, device):
@@ -56,8 +57,17 @@ def train_network(
                     f"{[round(v, 4) for v in res.train_loss]}"
                 )
             loss.backward()
-            if grad_clip:
-                last_gn = float(torch.nn.utils.clip_grad_norm_(net.parameters(), grad_clip))
+            gn = float(torch.nn.utils.clip_grad_norm_(
+                net.parameters(), grad_clip if grad_clip else float("inf")))
+            if not np.isfinite(gn):  # NaN/inf gradient from a finite loss: skip the update
+                res.skipped_steps += 1
+                if res.skipped_steps > 50:
+                    raise FloatingPointError(
+                        f"[{label}] {res.skipped_steps} optimizer steps had non-finite gradients "
+                        f"(epoch {ep}); the network is numerically unstable"
+                    )
+                continue
+            last_gn = gn
             opt.step()
             tot += loss.item() * len(yb)
             n += len(yb)
@@ -87,4 +97,6 @@ def train_network(
     if best_state is not None:
         net.load_state_dict(best_state)
     res.best_epoch = best_epoch
+    if res.skipped_steps and verbose:
+        print(f"[{label}] skipped {res.skipped_steps} steps with non-finite gradients")
     return res
