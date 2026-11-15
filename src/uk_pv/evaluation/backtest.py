@@ -44,8 +44,17 @@ def backtest(
         return pd.DataFrame(columns=["y_true", "y_pred", "daylight", "block_start", "step"]), 0.0
 
     preds = np.asarray(model.forecast_blocks(df, starts, bt.horizon), dtype=float)
-    if preds.shape != (len(starts), bt.horizon) or not np.isfinite(preds).all():
-        raise RuntimeError(f"{model.name}: bad forecast array shape/values {preds.shape}")
+    if preds.shape != (len(starts), bt.horizon):
+        raise RuntimeError(
+            f"{model.name}: forecast array has shape {preds.shape}, expected {(len(starts), bt.horizon)}"
+        )
+    bad = ~np.isfinite(preds)
+    if bad.any():
+        raise RuntimeError(
+            f"{model.name}: {int(bad.sum())} of {preds.size} forecast values are NaN/inf "
+            f"({int(bad.any(axis=1).sum())} of {len(starts)} blocks affected) in fold {fold.name}. "
+            "For neural models this usually means training diverged; check the training loss."
+        )
 
     pos = (starts[:, None] + np.arange(bt.horizon)[None, :]).ravel()
     out = pd.DataFrame(

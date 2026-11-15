@@ -45,6 +45,11 @@ def train_network(
         for xb, yb in iterate_batches(A, T, train_pos, seq_len, batch_size, True, gen, device):
             opt.zero_grad()
             loss = crit(net(xb), yb)
+            if not torch.isfinite(loss):
+                raise FloatingPointError(
+                    f"[{label}] non-finite training loss at epoch {ep}: the inputs contain NaN/inf "
+                    "or the learning rate is too high"
+                )
             loss.backward()
             if grad_clip:
                 torch.nn.utils.clip_grad_norm_(net.parameters(), grad_clip)

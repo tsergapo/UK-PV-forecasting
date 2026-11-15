@@ -111,3 +111,23 @@ def test_sun_hours_encoder_learns_productive_window():
     assert (f.loc[f.sun_start_flag == 1].index.hour == 6).all()
     assert (f.loc[f.sun_end_flag == 1].index.hour == 18).all()
     assert f.sun_start_flag.sum() == 31
+
+
+class _Nan(Forecaster):
+    name = "nanmodel"
+
+    def forecast_blocks(self, df, starts, horizon):
+        out = np.zeros((len(starts), horizon))
+        out[0, 0] = np.nan
+        return out
+
+
+def test_backtest_reports_nonfinite_forecasts_clearly():
+    df = make_site(gaps=False)
+    fold = [f for f in _folds(df) if f.kind == "test"][0]
+    try:
+        backtest(_Nan(T, EXOG), df, fold, BT, T, EXOG)
+    except RuntimeError as e:
+        assert "NaN/inf" in str(e) and "1 of" in str(e)
+        return
+    raise AssertionError("expected RuntimeError")
